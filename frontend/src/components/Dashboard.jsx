@@ -11,8 +11,10 @@ function Dashboard() {
         const checkAuth = async () => {
             try {
                 const response = await axios.get('/verify-auth');
+                console.log('Auth response:', response.data);
                 setUser(response.data.user);
             } catch (err) {
+                console.error('Auth error:', err.response?.data || err.message);
                 navigate('/login');
             } finally {
                 setLoading(false);
@@ -37,8 +39,8 @@ function Dashboard() {
 
     return (
         <div className="dashboard-container">
-            <h1 className="dashboard-title">Hello Welcome</h1>
-            <p className="dashboard-user">Logged in as {user?.username}</p>
+            <h1 className="dashboard-title">Welcome, {user?.username}!</h1>
+            <p className="dashboard-user">You are successfully logged in.</p>
             <button onClick={handleLogout} className="logout-btn">
                 Logout
             </button>

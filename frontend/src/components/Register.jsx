@@ -38,7 +38,9 @@ function Register() {
                 navigate('/login');
             }, 2000);
         } catch (err) {
-            setError(err.response?.data?.message || 'Registration failed. Please try again.');
+            console.error('Registration error:', err);
+            console.error('Error response:', err.response);
+            setError(err.response?.data?.message || err.message || 'Registration failed. Please try again.');
         } finally {
             setLoading(false);
         }
