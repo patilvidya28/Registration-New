@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Registration Endpoint
-app.post('/register', async (req, res) => {
+app.post('/api/register', async (req, res) => {
     console.log('Register request received:', req.body);
     try {
         const { username, email, phone, password, confirmPassword } = req.body;
@@ -68,7 +68,7 @@ app.post('/register', async (req, res) => {
 });
 
 // Login Endpoint
-app.post('/login', async (req, res) => {
+app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
@@ -118,7 +118,7 @@ app.post('/login', async (req, res) => {
 });
 
 // Check Auth Endpoint (for dashboard)
-app.get('/verify-auth', (req, res) => {
+app.get('/api/verify-auth', (req, res) => {
     const token = req.cookies.authToken;
 
     if (!token) {
@@ -134,11 +134,17 @@ app.get('/verify-auth', (req, res) => {
 });
 
 // Logout Endpoint
-app.post('/logout', (req, res) => {
+app.post('/api/logout', (req, res) => {
     res.clearCookie('authToken');
     res.status(200).json({ message: 'logout success' });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}
+
+// Export for Vercel serverless
+module.exports = app;
