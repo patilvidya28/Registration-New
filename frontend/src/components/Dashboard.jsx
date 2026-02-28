@@ -37,9 +37,21 @@ function Dashboard() {
         return <div style={{ color: 'white' }}>Loading...</div>;
     }
 
+    if (!user) {
+        return (
+            <div className="dashboard-container">
+                <h1 className="dashboard-title">Error loading user data</h1>
+                <p className="dashboard-user">Please try logging in again.</p>
+                <button onClick={() => navigate('/login')} className="logout-btn">
+                    Go to Login
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div className="dashboard-container">
-            <h1 className="dashboard-title">Welcome, {user?.username}!</h1>
+            <h1 className="dashboard-title">Welcome, {user.username}!</h1>
             <p className="dashboard-user">You are successfully logged in.</p>
             <button onClick={handleLogout} className="logout-btn">
                 Logout

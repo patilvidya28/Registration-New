@@ -104,9 +104,9 @@ app.post('/login', async (req, res) => {
 
         // Set cookie
         res.cookie('authToken', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            httpOnly: false,
+            secure: false,
+            sameSite: 'lax',
             maxAge: 3600000 // 1 hour
         });
 
