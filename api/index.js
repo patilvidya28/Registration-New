@@ -1,0 +1,123 @@
+const express = require('express');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+const db = require('../backend/db');
+
+const app = express();
+const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key_123';
+
+// Middleware
+app.use(cors({
+    origin: true,
+    credentials: true
+}));
+app.use(express.json());
+app.use(cookieParser());
+
+// Registration Endpoint
+app.post('/api/register', async (req, res) => {
+    try {
+        const { username, email, phone, password, confirmPassword } = req.body;
+
+        if (!username || !email || !phone || !password || !confirmPassword) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+
+        if (password !== confirmPassword) {
+            return res.status(400).json({ message: 'Passwords do not match' });
+        }
+
+        const [existingUsers] = await db.query(
+            'SELECT * FROM users WHERE username = ? OR email = ?',
+            [username, email]
+        );
+
+        if (existingUsers.length > 0) {
+            return res.status(409).json({ message: 'Username or email already exists' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        await db.query(
+            'INSERT INTO users (username, email, phone, password) VALUES (?, ?, ?, ?)',
+            [username, email, phone, hashedPassword]
+        );
+
+        res.status(201).json({ message: 'register success' });
+    } catch (err) {
+        console.error('Registration error:', err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// Login Endpoint
+app.post('/api/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+
+        if (!username || !password) {
+            return res.status(400).json({ message: 'Username and password are required' });
+        }
+
+        const [users] = await db.query(
+            'SELECT * FROM users WHERE username = ?',
+            [username]
+        );
+
+        if (users.length === 0) {
+            return res.status(401).json({ message: 'Invalid username or password' });
+        }
+
+        const user = users[0];
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid username or password' });
+        }
+
+        const token = jwt.sign(
+            { userId: user.id, username: user.username },
+            JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
+        res.cookie('authToken', token, {
+            httpOnly: false,
+            secure: false,
+            sameSite: 'lax',
+            maxAge: 3600000
+        });
+
+        res.status(200).json({ message: 'login success', user: { username: user.username } });
+    } catch (err) {
+        console.error('Login error:', err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// Check Auth Endpoint
+app.get('/api/verify-auth', (req, res) => {
+    const token = req.cookies.authToken;
+
+    if (!token) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        res.status(200).json({ user: decoded });
+    } catch (err) {
+        res.status(401).json({ message: 'Invalid token' });
+    }
+});
+
+// Logout Endpoint
+app.post('/api/logout', (req, res) => {
+    res.clearCookie('authToken');
+    res.status(200).json({ message: 'logout success' });
+});
+
+module.exports = app;
