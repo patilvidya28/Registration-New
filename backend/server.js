@@ -21,6 +21,11 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
+// Health check endpoint
+app.get('/', (req, res) => {
+    res.json({ message: 'Backend is running!' });
+});
+
 // Registration Endpoint
 app.post('/register', async (req, res) => {
     console.log('Register request received:', req.body);
