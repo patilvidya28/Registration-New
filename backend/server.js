@@ -13,8 +13,10 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key_123';
 
 // Middleware
 app.use(cors({
-    origin: true,
-    credentials: true
+    origin: '*',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(cookieParser());
