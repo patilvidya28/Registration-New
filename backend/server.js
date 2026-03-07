@@ -141,7 +141,7 @@ app.get('/verify-auth', (req, res) => {
 });
 
 // Logout Endpoint
-app.post('/api/logout', (req, res) => {
+app.post('/logout', (req, res) => {
     res.clearCookie('authToken');
     res.status(200).json({ message: 'logout success' });
 });
