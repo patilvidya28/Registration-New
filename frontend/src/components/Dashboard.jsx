@@ -25,12 +25,8 @@ function Dashboard() {
     }, [navigate]);
 
     const handleLogout = async () => {
-        try {
-            await axios.post('/logout');
-            navigate('/login');
-        } catch (err) {
-            console.error('Logout failed', err);
-        }
+        localStorage.removeItem('authToken');
+        navigate('/login');
     };
 
     if (loading) {

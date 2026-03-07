@@ -7,7 +7,15 @@ const API_URL =
 
 const instance = axios.create({
     baseURL: API_URL,
-    withCredentials: true // Important for cookies!
+});
+
+// Attach JWT from localStorage as Authorization header on every request
+instance.interceptors.request.use((config) => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+        config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
 });
 
 export default instance;

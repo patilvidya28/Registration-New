@@ -18,7 +18,8 @@ function Login() {
         setLoading(true);
 
         try {
-            await axios.post('/login', formData);
+            const response = await axios.post('/login', formData);
+            localStorage.setItem('authToken', response.data.token);
             navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed. Please try again.');

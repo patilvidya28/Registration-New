@@ -122,15 +122,7 @@ app.post('/login', async (req, res) => {
             { expiresIn: '1h' }
         );
 
-        // Set cookie
-        res.cookie('authToken', token, {
-            httpOnly: false,
-            secure: false,
-            sameSite: 'lax',
-            maxAge: 3600000 // 1 hour
-        });
-
-        res.status(200).json({ message: 'login success', user: { username: user.username } });
+        res.status(200).json({ message: 'login success', token, user: { username: user.username } });
     } catch (err) {
         console.error('Login error:', err);
         res.status(500).json({ message: 'Internal server error' });
@@ -139,7 +131,11 @@ app.post('/login', async (req, res) => {
 
 // Check Auth Endpoint (for dashboard)
 app.get('/verify-auth', (req, res) => {
-    const token = req.cookies.authToken;
+    // Accept token from Authorization header (cross-domain) or cookie (same-domain)
+    const authHeader = req.headers['authorization'];
+    const token = (authHeader && authHeader.startsWith('Bearer '))
+        ? authHeader.slice(7)
+        : req.cookies.authToken;
 
     if (!token) {
         return res.status(401).json({ message: 'Unauthorized' });
